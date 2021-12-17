@@ -3,6 +3,7 @@
 #include "./include/cache.h"
 #include "./include/direct_mapped.h"
 #include "./include/N-way-Set.h"
+//#include "./include/fully_associate.h"
 #include <iostream>
 #include <bitset>
 #include <sstream>
@@ -52,8 +53,7 @@ int main(int argc, char* argv[]){
     Text_interpreter * ti = new Text_interpreter(st);
     Direct_mapped_cache * dmcache;
     N_Way_Set_cache * nscache;
-    Fully_associate_cache * facache;
-    //N_Way_Set_cache * 
+    //Fully_associate_cache * facache;
     if(argcount == 8) {
         ai= new Args_interpreter(atoi(argv[2]),   //int n sets
                                 atoi(argv[3]),    //int n_blocks
@@ -65,13 +65,25 @@ int main(int argc, char* argv[]){
     switch (ai->which_cache()){
         case 0:     //then directed mapped 
             dmcache = new Direct_mapped_cache(mem_address_size, ai->get_sets(),ai->get_bytes());
+            cout << "argc : "<<argcount<<endl;
+            while ( !(ti->next_instruction(&type, &addr) < 0) ){
+                //pass to cache type and addr
+                // then cache will do l or s 
+                // L1.
+                dmcache->placement_policy(type, addr);
+            }
         break;
-
         case 1:     //then N way m block cache
-            nscache = new N_Way_Set_cache(mem_address_size, ai->get_sets(),ai->get_blocks(),->get_bytes())
-
+            nscache = new N_Way_Set_cache(mem_address_size, ai->get_sets(),ai->get_blocks(),ai->get_bytes());
+            cout << "argc : "<<argcount<<endl;
+            while ( !(ti->next_instruction(&type, &addr) < 0) ){
+                //pass to cache type and addr
+                // then cache will do l or s 
+                // L1.
+                nscache->placement_policy(type, addr);
+            }
         break;
-
+            //facache = new Fully_associate_cache(mem_address_size, ai->get_blocks(),ai->get_bytes());
         case 2:     //then Fully associate cache
 
         default : 
@@ -81,16 +93,7 @@ int main(int argc, char* argv[]){
     }
 
     //logic
-    cout << "argc : "<<argcount<<endl;
-    while ( !(ti->next_instruction(&type, &addr) < 0) ){
-        //pass to cache type and addr
-        // then cache will do l or s 
-        // L1.
-        dmcache->placement_policy(type, addr);
-
-
-
-    }
+    
     logger->summary();
     cout << "Termiated Gracefully." <<endl;
     return 0;

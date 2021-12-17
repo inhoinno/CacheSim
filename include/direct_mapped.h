@@ -13,6 +13,8 @@ class Direct_mapped_cache : public ICache{
     uint32_t __valid_bit_offset;    //these field is use for check valid bit like real world cache.
     uint32_t __dirty_bit_offset;    //e.g [1 tag data 1] then check valid bit like (tagarray[index] & 1<<__valid_bit_offset)==1 
                                     //     ^valid     ^dirty
+    uint32_t __access_bit_offset;
+    uint32_t _access_bit_size=3;
 
     //bit size
     uint32_t _offset_size;
@@ -38,6 +40,7 @@ public :
 
         tagarray.assign(pow(2,_index_size), new bitset<32>(0));
         cout <<"  Direct_mapped_cache:: tagarray:"<< tagarray.size()<<" entries"<<endl;
+        __valid_bit_offset = _tag_size + _index_size + _offset_size;
 
 
     }

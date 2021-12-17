@@ -25,19 +25,16 @@ class Fully_associate_cache : public ICache{
 public :
     Fully_associate_cache();
     //Direct_mapped_cache Constructor construct tagarray and bit field(valid, dirty)
-    Fully_associate_cache(int mem_address_size , int sets, int bytes_per_block){
-        //if direct_mapped_cache, then blocks=1 and sets=n
-        //log_2(bytes_per_block) bits 만큼 offset bit 필요
+    Fully_associate_cache(int mem_address_size , int blocks, int bytes_per_block){
+        //Fully 에서는 모든 블럭 태그연산이 병렬로 수행됨
         _offset_size = (uint32_t)log2(bytes_per_block);
-        _index_size = (uint32_t)log2(sets);
-        _tag_size = (uint32_t)(mem_address_size) - _index_size - _offset_size;
+        _tag_size= (uint32_t)(mem_address_size) - _offset_size;
 
-        cout <<"  Direct_mapped_cache:: offset  :" << _offset_size << " bits"<<endl; 
-        cout <<"  Direct_mapped_cache:: index   :" << _index_size << " bits"<<endl; 
-        cout <<"  Direct_mapped_cache:: tag     :" << _tag_size << " bits"<<endl; 
+        cout <<"  Fully_associate_cache:: offset  :" << _offset_size << " bits"<<endl; 
+        cout <<"  Fully_associate_cache:: tag     :" << _tag_size << " bits"<<endl; 
 
         tagarray.assign(pow(2,_index_size), new bitset<32>(0));
-        cout <<"  Direct_mapped_cache:: tagarray:"<< tagarray.size()<<" entries"<<endl;
+        cout <<"  Fully_associate_cache:: tagarray:"<< tagarray.size()<<" entries"<<endl;
 
 
     }

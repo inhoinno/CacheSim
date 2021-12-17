@@ -13,6 +13,7 @@ private:
                                     //     ^valid     ^dirty
     //bit size
     uint32_t _offset_size;
+    uint32_t _blocks;
     uint32_t _tag_size;
     uint32_t _index_size;
     uint32_t _valid_bit_size =1;
@@ -29,9 +30,11 @@ public :
         //      offset_bits = log2(bytes_per_block)
         //      index_bits = log2(# of Entries)
         //  32-offset_bits-index_bits
+        _blocks = (uint32_t)blocks; //overflow?
         _offset_size = (uint32_t)log2(bytes_per_block);
         _index_size = (uint32_t)log2(sets);
         _tag_size = (uint32_t)(mem_address_size) - _index_size - _offset_size;
+        __valid_bit_offset = _tag_size + _index_size + _offset_size;
 
         cout <<"  N-way-Associative_cache:: offset  :" << _offset_size << " bits"<<endl; 
         cout <<"  N-way-Associative_cache:: index   :" << _index_size << " bits"<<endl; 
@@ -43,4 +46,27 @@ public :
         cout <<"  Direct_mapped_cache:: tagarray:"<< tagarray.size()<<" entries"<<endl;
 
     }
+    void set_write_policy(int wp);
+    void placement_policy(char operation_type, string physical_address);
+    void replacement_policy();
+    int cache_lookup_algorithm(std::string physical_address);
+
+    uint32_t get_tag(std::string physical_address);
+    uint32_t get_index(std::string physical_address);
+    void store_tag(std::string physical_address);
+
+    uint32_t cache_lookup(std::string physical_address);
+    uint32_t _cache_lookup(uint32_t way, uint32_t cache_index);
+
+    bool is_valid(std::string physical_address);
+    bool _is_valid(uint32_t way, uint32_t cache_index);
+    
+    bool is_dirty(std::string physical_address);
+    bool _is_dirty(uint32_t way, uint32_t cache_index);
+
+    void set_valid_bit(std::string physical_address);
+    void _set_valid_bit(uint32_t way, uint32_t cache_index);
+    
+    void set_dirty_bit(std::string physical_address);
+    void _set_dirty_bit(uint32_t way, uint32_t cache_index);
 };

@@ -65,12 +65,12 @@ public :
     void _write_mem();
     uint32_t get_tag(std::string physical_adderss);
     uint32_t get_index(std::string physical_address);
-    uint32_t cache_lookup(uint32_t cache_index);
+    uint32_t cache_lookup(std::string physical_address);
     
-    bool is_valid(uint32_t cache_index);
-    void set_valid_bit(uint32_t cahce_index);
-    bool is_dirty(uint32_t cache_index);
-    void set_dirty_bit(uint32_t cache_index);
+    bool is_valid(std::string physical_address);
+    void set_valid_bit(std::string physical_address);
+    bool is_dirty(std::string physical_address);
+    void set_dirty_bit(std::string physical_address);
     void store_tag(std::string physical_address);
 
     /*
