@@ -51,6 +51,7 @@ public :
     void replacement_policy();
     int cache_lookup_algorithm(std::string physical_address);
 
+    uint32_t get_way(std::string physical_address);
     uint32_t get_tag(std::string physical_address);
     uint32_t get_index(std::string physical_address);
     void store_tag(std::string physical_address);

@@ -15,7 +15,7 @@ cachelog::Cache_event * logger = new cachelog::Cache_event();
 using namespace std;
 //Cache * L1 = new Cache
 
-string * hex_to_binary(string hex_str){ 
+std::string * hex_to_binary(std::string hex_str){ 
     stringstream ss ;
     unsigned n;
     ss << std::hex << hex_str;
@@ -24,7 +24,7 @@ string * hex_to_binary(string hex_str){
     string * bin_str = new string(bin.to_string());
     return bin_str;
 }
-bitset<32> hex_to_bitset(string hex_str){ 
+bitset<32> hex_to_bitset(std::string hex_str){ 
     stringstream ss ;
     unsigned n;
     ss << std::hex << hex_str;

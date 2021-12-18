@@ -37,12 +37,12 @@ bool ICache::is_valid(std::string physical_address){
     return false;
 }
 
-void ICache::set_valid_bit(uint32_t cache_index){
-    cout<<"ICache::set_valid_bit called"<< cache_index <<endl;
+void ICache::set_valid_bit(std::string physical_address){
+    cout<<"ICache::set_valid_bit called"<<  physical_address <<endl;
     return ;
 }
-void ICache::set_dirty_bit(uint32_t cache_index){
-    cout<<"ICache::set_dirty_bit called"<< cache_index <<endl;
+void ICache::set_dirty_bit(std::string physical_address){
+    cout<<"ICache::set_dirty_bit called"<<  physical_address <<endl;
     return ;
 }
 
@@ -143,10 +143,18 @@ uint32_t Direct_mapped_cache::get_tag(std::string physical_address){
 }
 uint32_t Direct_mapped_cache::get_index(std::string physical_address){
     bitset<32> mask(0);
-    for (uint32_t i = _offset_size; i<_offset_size + _index_size; i++)
-        mask.flip(i);
-    bitset<32> idx(mask & hex_to_bitset(physical_address));
-    //cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address << "): "<< idx.to_string() << endl;
+    bitset<32> umax(0);
+    bitset<32> idx(hex_to_bitset(physical_address).to_ulong());
+    //cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address <<"): "<< idx.to_string() << endl;
+    mask=mask.flip();
+    umax=umax.flip();
+    mask=mask << _offset_size;      //11 11 00  xor 11 00 00 = 11 00 11
+    umax=umax << _index_size;
+    mask = mask ^ umax ;            //11 00 11 
+    //cout<< " Direct_mapped_cache:: get_index:mask(0x"<< physical_address <<"): "<< mask.to_string() << endl;
+    idx = idx & mask;
+    idx = idx >> _offset_size;
+    //cout<< " Direct_mapped_cache:: get_index:idx(0x"<< physical_address <<"): "<< idx.to_string()<< endl;
     return idx.to_ulong();
 }
 
@@ -155,11 +163,11 @@ uint32_t Direct_mapped_cache::cache_lookup(uint32_t cache_index){
     bitset<32> mask(0);
     bitset<32> umax(0);
     bitset<32> tag(tagarray.at(cache_index)->to_ulong());
-    mask = mask.flip(); 
-    umax = umax.flip();
-    mask = mask << _tag_size;   // 11 000
-    mask = mask ^ umax;
-    mask &= tag;
+    mask = mask.flip();         // 11 1111
+    umax = umax.flip();         // 11 1111
+    mask = mask << _tag_size;   // 11 0000
+    mask = mask ^ umax;         // 00 1111
+    mask &= tag;                // 00 0101 & 00 1111
     //cout<<" Direct_mapped_cache::cache_lookup: mask: " <<mask.to_string()<<endl;
 
     return mask.to_ulong();
@@ -197,7 +205,7 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
         // if sd then set dirty_bit is enough 
         cout<< operation_type<< " "<<physical_address <<" HIT(tag:"<< get_tag(physical_address)<<"  index:"<<get_index(physical_address)<<")"<<endl;
         if (write_flag) {
-            set_dirty_bit(get_index(physical_address));        
+            set_dirty_bit(physical_address);        
             logger->store_hit();
         }else{
             logger->load_hit();
@@ -210,11 +218,11 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
         //      then call eviction algorithm so make cache has a room
         //  place physical address block to cache. tag updated.
         
-        if(!is_valid(get_index(physical_address))){
+        if(!is_valid(physical_address)){
             
             logger->cold_miss();
             store_tag(physical_address);
-            set_valid_bit(get_index(physical_address));
+            set_valid_bit(physical_address);
 
             if (!write_flag) {  
                 //if ld instruction coldmiss then goto mem and fetch data
@@ -229,7 +237,7 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
                 }
             }
         }
-        else if(get_tag(physical_address) != cache_lookup(get_index(physical_address))){
+        else if(get_tag(physical_address) != cache_lookup(physical_address)){
             logger->conflict_miss(); 
 
             //now eviction done with write allocation & policy
@@ -240,7 +248,7 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
             store_tag(physical_address);
             if (write_flag) {
                 logger->store_miss();
-                set_dirty_bit(get_index(physical_address));
+                set_dirty_bit(physical_address);
             }else{
                 logger->load_miss();
             }
@@ -258,10 +266,17 @@ uint32_t N_Way_Set_cache::get_tag(std::string physical_address){
 }
 uint32_t N_Way_Set_cache::get_index(std::string physical_address){
     bitset<32> mask(0);
-
-    for (uint32_t i = _offset_size; i<_offset_size + _index_size; i++)
-        mask.flip(i);
-    bitset<32> idx(mask & hex_to_bitset(physical_address));
+    bitset<32> umax(0);
+    bitset<32> idx(hex_to_bitset(physical_address).to_ulong());
+    cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address <<"): "<< idx.to_string() << endl;
+    mask=mask.flip();
+    umax=umax.flip();
+    mask=mask << _offset_size;      //11 11 00  xor 11 00 00 = 11 00 11
+    umax=umax << _index_size;
+    mask = mask ^ umax ;            //11 00 11 
+    //cout<< " Direct_mapped_cache:: get_index:mask(0x"<< physical_address <<"): "<< mask.to_string() << endl;
+    idx = idx & mask;
+    idx = idx >> _offset_size;
     //cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address << "): "<< idx.to_string() << endl;
     return idx.to_ulong();
 }
@@ -272,7 +287,7 @@ uint32_t N_Way_Set_cache::cache_lookup(std::string physical_address){
     bitset<32> pidx(get_index(physical_address));
     bitset<32> * match;
     bitset<32> mask(0);
-    int i = 0;
+    uint32_t i = 0;
     mask = mask.flip();
     mask = mask << __valid_bit_offset;
     mask = mask.flip(); //tag, index, offset
@@ -282,27 +297,6 @@ uint32_t N_Way_Set_cache::cache_lookup(std::string physical_address){
         if ( match->to_ulong() == ptag.to_ulong()) break;
     }
     return _cache_lookup(i, pidx.to_ulong());
-}
-bool N_Way_Set_cache::_is_valid(uint32_t way, uint32_t cache_index){
-    bitset<32> mask(1);
-    bitset<32> val(tagarray[way].at(cache_index)->to_ulong());
-    mask = mask << __valid_bit_offset;
-    mask = mask & val;
-    return (mask.to_ulong() == 1) ? true : false ;
-}
-bool N_Way_Set_cache::_is_dirty(uint32_t way, uint32_t cache_index){
-    bitset<32> mask(1);
-    bitset<32> dir(tagarray[way].at(cache_index)->to_ulong());
-    mask = mask << __valid_bit_offset+1;
-    mask = mask & dir;
-    return (mask.to_ulong() ==1) ? true : false;
-}
-void N_Way_Set_cache::_set_valid_bit(uint32_t way, uint32_t cache_index){
-    tagarray[way].at(cache_index)->set(__valid_bit_offset, 1);
-}
-void N_Way_Set_cache::_set_dirty_bit(uint32_t way, uint32_t cache_index){
-        tagarray[way].at(cache_index)->set(__valid_bit_offset+1, 1);
-
 }
 
 uint32_t N_Way_Set_cache::_cache_lookup(uint32_t way, uint32_t cache_index){
@@ -318,6 +312,36 @@ uint32_t N_Way_Set_cache::_cache_lookup(uint32_t way, uint32_t cache_index){
     mask &= tag;
     return mask.to_ulong();
 }
+uint32_t N_Way_Set_cache::get_way(std::string physical_address){
+    bitset<32> ptag(get_tag(physical_address));
+    bitset<32> pidx(get_index(physical_address));
+    bitset<32> * match;
+    bitset<32> mask(0);
+    uint32_t i = 0;
+    mask = mask.flip();
+    mask = mask << __valid_bit_offset;
+    mask = mask.flip(); //tag, index, offset
+
+    for (i =0; i<_blocks; i++){
+        match = new bitset<32>(tagarray[i][pidx.to_ulong()]->to_ulong() & mask.to_ulong());
+        if ( match->to_ulong() == ptag.to_ulong()) break;
+    }
+    return i;
+}
+
+bool N_Way_Set_cache::is_valid(std::string physical_address){
+    return _is_valid(get_way(physical_address), get_index(physical_address));
+}
+bool N_Way_Set_cache::is_dirty(std::string physical_address){
+        return _is_dirty(get_way(physical_address), get_index(physical_address));
+}
+void N_Way_Set_cache::set_valid_bit(std::string physical_address){
+    _set_valid_bit(get_way(physical_address), get_index(physical_address));
+}
+void N_Way_Set_cache::set_dirty_bit(std::string physical_address){
+    _set_dirty_bit(get_way(physical_address), get_index(physical_address));
+}
+
 bool N_Way_Set_cache::_is_valid(uint32_t way, uint32_t cache_index){
     bitset<32> mask(1);
     bitset<32> val(tagarray[way].at(cache_index)->to_ulong());
@@ -339,3 +363,11 @@ void N_Way_Set_cache::_set_dirty_bit(uint32_t way, uint32_t cache_index){
         tagarray[way].at(cache_index)->set(__valid_bit_offset+1, 1);
 
 }
+void N_Way_Set_cache::store_tag(std::string physical_address){
+    cout<<physical_address<<endl;
+    return;
+    }
+int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
+    cout<<physical_address<<endl;
+    return 0;
+    }
