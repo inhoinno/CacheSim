@@ -190,8 +190,7 @@ void Direct_mapped_cache::set_dirty_bit(uint32_t cache_index){
 }
 
 void N_Way_Set_cache::placement_policy(char operation_type, std::string physical_address){
-    bool write_flag=false;    
-    
+    bool write_flag=false;     
     cout<< "N_way_set_cache::placement_policy : operation:"<< operation_type<<" address:" << physical_address <<endl;
     if(operation_type == 'l'){
         logger->load();
@@ -284,10 +283,12 @@ uint32_t N_Way_Set_cache::get_index(std::string physical_address){
     mask=mask << _offset_size;      	//1111 1100  xor 11 00 00 = 00 11 00
     umax=umax << _index_size;
     mask = mask ^ umax ; 
-    //cout<< " Direct_mapped_cache:: get_index:mask(0x"<< physical_address <<"): "<< mask.to_string() << endl;
+    	//cout<< " Direct_mapped_cache:: get_index:mask(0x"<< physical_address <<"): "<< mask.to_string() << endl;
     idx = idx & mask;
     idx = idx >> _offset_size;
-    //cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address << "): "<< idx.to_string() << endl;
+    
+
+	//cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address << "): "<< idx.to_string() << endl;
     return idx.to_ulong();
 }
 uint32_t N_Way_Set_cache::cache_lookup(std::string physical_address){
@@ -379,5 +380,9 @@ void N_Way_Set_cache::store_tag(std::string physical_address){
     }
 int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
     cout<<"N_Way::cache_lookup_algorithm"<<physical_address<<endl;
-    return ICache::cache_lookup_algorithm(physical_address);
+	if(get_tag(physical_address) == cache_lookup(physical_address) && is_valid(physical_address)){
+        	//then HIT
+        return 1;
     }
+    return 0;
+}
