@@ -368,6 +368,7 @@ void N_Way_Set_cache::store_tag(std::string physical_address){
     return;
     }
 int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
+    
     cout<<physical_address<<endl;
     return 0;
     }
