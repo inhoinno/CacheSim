@@ -379,16 +379,11 @@ void N_Way_Set_cache::store_tag(std::string physical_address){
     return;
     }
 int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
-<<<<<<< HEAD
-    
-    cout<<physical_address<<endl;
-    return 0;
-=======
+
     cout<<"N_Way::cache_lookup_algorithm"<<physical_address<<endl;
 	if(get_tag(physical_address) == cache_lookup(physical_address) && is_valid(physical_address)){
         	//then HIT
         return 1;
->>>>>>> 0f2c1a4da9ae7e5309663d3e3abc282bd8e30bd0
     }
     return 0;
 }
