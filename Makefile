@@ -3,7 +3,7 @@ OBJS = main.o cache.o interpreter.o
 DEPS= $(OBJS:.o=.d)
 TARGET = hw4
 INCLUDE = -Iinclude/
-CXXFLAGS = -Wall -Wextra -Werror
+CXXFLAGS = -g -Wall -Wextra -Werror
 
 all:$(TARGET)
 

@@ -190,8 +190,7 @@ void Direct_mapped_cache::set_dirty_bit(uint32_t cache_index){
 }
 
 void N_Way_Set_cache::placement_policy(char operation_type, std::string physical_address){
-    bool write_flag=false;    
-    
+    bool write_flag=false;     
     cout<< "N_way_set_cache::placement_policy : operation:"<< operation_type<<" address:" << physical_address <<endl;
     if(operation_type == 'l'){
         logger->load();
@@ -259,25 +258,37 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
 
 uint32_t N_Way_Set_cache::get_tag(std::string physical_address){
     bitset<32> mask(0); //physical address
-    for (uint32_t i = _offset_size+_index_size; i<_tag_size; i++)
-        mask.flip(i);
+    bitset<32> umax(0); //pm
     bitset<32> tag(mask & hex_to_bitset(physical_address));
+
+
+	mask = mask.flip();
+	umax = umax.flip();
+	mask = mask << _index_size;				//1111 0000
+	umax = umax >> (_valid_bit_size+_dirty_bit_size); 	//0111 1111
+	mask = mask ^ umax;					//1000 1111
+	mask = mask.flip();					//0111 0000
+	tag = tag & mask;
+	tag >> (_index_size + _offset_size);
+	
+
     return tag.to_ulong();
 }
 uint32_t N_Way_Set_cache::get_index(std::string physical_address){
     bitset<32> mask(0);
     bitset<32> umax(0);
     bitset<32> idx(hex_to_bitset(physical_address).to_ulong());
-    cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address <<"): "<< idx.to_string() << endl;
-    mask=mask.flip();
-    umax=umax.flip();
-    mask=mask << _offset_size;      //11 11 00  xor 11 00 00 = 11 00 11
+    mask=mask.flip();			//1111 1111
+    umax=umax.flip();			//1111 1111
+    mask=mask << _offset_size;      	//1111 1100  xor 11 00 00 = 00 11 00
     umax=umax << _index_size;
-    mask = mask ^ umax ;            //11 00 11 
-    //cout<< " Direct_mapped_cache:: get_index:mask(0x"<< physical_address <<"): "<< mask.to_string() << endl;
+    mask = mask ^ umax ; 
+    	//cout<< " Direct_mapped_cache:: get_index:mask(0x"<< physical_address <<"): "<< mask.to_string() << endl;
     idx = idx & mask;
     idx = idx >> _offset_size;
-    //cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address << "): "<< idx.to_string() << endl;
+    
+
+	//cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address << "): "<< idx.to_string() << endl;
     return idx.to_ulong();
 }
 uint32_t N_Way_Set_cache::cache_lookup(std::string physical_address){
@@ -368,7 +379,16 @@ void N_Way_Set_cache::store_tag(std::string physical_address){
     return;
     }
 int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
+<<<<<<< HEAD
     
     cout<<physical_address<<endl;
     return 0;
+=======
+    cout<<"N_Way::cache_lookup_algorithm"<<physical_address<<endl;
+	if(get_tag(physical_address) == cache_lookup(physical_address) && is_valid(physical_address)){
+        	//then HIT
+        return 1;
+>>>>>>> 0f2c1a4da9ae7e5309663d3e3abc282bd8e30bd0
     }
+    return 0;
+}
