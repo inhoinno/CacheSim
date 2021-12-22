@@ -376,8 +376,11 @@ void N_Way_Set_cache::_set_dirty_bit(uint32_t way, uint32_t cache_index){
 }
 void N_Way_Set_cache::store_tag(std::string physical_address){
     cout<<physical_address<<endl;
+    uint32_t tag = get_tag(physical_address);
+    tagarray[][get_index(physical_address)] = new bitset<32>(tag);  //N-Way store tag
     return;
     }
+
 int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
 
     cout<<"N_Way::cache_lookup_algorithm"<<physical_address<<endl;
