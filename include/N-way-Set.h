@@ -3,7 +3,7 @@
 #include "./cache.h"
 class N_Way_Set_cache : public ICache{
 private: 
-    std::vector<std::vector<std::bitset<32> *>> tagarray; //e.g. [index(3) valid(1) tag(8)] then 
+    std::vector<std::vector<std::bitset<32>*>> tagarray; //e.g. [index(3) valid(1) tag(8)] then 
                                           // (tagarray[index] & 1<<__valid_bit_offset) check valid bit
                                           // (tagarray[index] & 1*tagsize << __tag_bit_offset) is tag
     uint32_t __index_bit_offset;
@@ -39,7 +39,7 @@ public :
         cout <<"  N-way-Associative_cache:: offset  :" << _offset_size << " bits"<<endl; 
         cout <<"  N-way-Associative_cache:: index   :" << _index_size << " bits"<<endl; 
         cout <<"  N-way-Associative_cache:: tag     :" << _tag_size << " bits"<<endl; 
-        
+        //tagarray = new (_blocks, std::vector<std::bitset<32>*>(sets));
         for (int i =0; i<blocks; i++)
             tagarray[i].assign(pow(2,_index_size), new bitset<32>(0));
 
