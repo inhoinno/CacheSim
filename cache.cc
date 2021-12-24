@@ -192,6 +192,7 @@ void Direct_mapped_cache::set_dirty_bit(uint32_t cache_index){
 void N_Way_Set_cache::placement_policy(char operation_type, std::string physical_address){
     bool write_flag=false;   
     uint32_t i = 0;  
+    uint32_t way = 0;
     cout<< "N_way_set_cache::placement_policy : operation:"<< operation_type<<" address:" << physical_address <<endl;
     if(operation_type == 'l'){
         logger->load();
@@ -218,11 +219,11 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
         //      then call eviction algorithm so make cache has a room
         //  place physical address block to cache. tag updated.
         
-
-        if(!is_valid(physical_address)){    //if cold miss
+        if(!is_valid(physical_address)){    //if is cold miss
+            //then there is some room for pm 
             logger->cold_miss(); 
             store_tag(physical_address);    //store_tag
-            set_valid_bit(physical_address);
+            set_valid_bit(physical_address);//
 
             if (!write_flag) {  
                 //if ld instruction coldmiss then goto mem and fetch data
@@ -237,15 +238,18 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
                 }
             }
         }
-        else if(get_tag(physical_address) != cache_lookup(physical_address)){
+        else{   
+            //else then there are all valid entry in cache
+            //so we need replacement policy
             logger->conflict_miss(); 
-
-            //now eviction done with write allocation & policy
-
-            //load data to mem
+            cout << "N_Way_Set_cache::store_tag call eviction algorithm" << endl;
+            way = eviction_algorithm();
             logger->miss_penalty(MISS_PENALTY_CPU_CYCLE*_offset_size);
+            _store_tag(way,idx);
+            //now eviction done with write allocation & policy
+            //load data to mem
             //now data loaded to cache
-            store_tag(physical_address);
+            //store_tag(physical_address);
             if (write_flag) {
                 logger->store_miss();
                 set_dirty_bit(physical_address);
@@ -401,6 +405,7 @@ void N_Way_Set_cache::store_tag(std::string physical_address){
     if(way != _blocks)
         _store_tag(way,idx);
     else if(way == _blocks){
+        cout << "N_Way_Set_cache::store_tag call eviction algorithm" << endl;
         way = eviction_algorithm();
         _store_tag(way,idx);
     }
