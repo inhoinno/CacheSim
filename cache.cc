@@ -438,3 +438,7 @@ int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
     }
     return 0;
 }
+void N_Way_Set_cache::replacement_policy(){
+    cout<< "N_Way_Set_cache::replacement_policy : " <<endl;
+    return;
+}
