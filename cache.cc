@@ -267,16 +267,12 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
 
 uint32_t N_Way_Set_cache::get_tag(std::string physical_address){
     bitset<32> mask(0); //physical address
-    bitset<32> umax(0); //pm
-    bitset<32> tag(mask & hex_to_bitset(physical_address));
+    bitset<32> tag(hex_to_bitset(physical_address).to_ulong());
 
 	mask = mask.flip();
-	umax = umax.flip();
-	mask = mask << (_offset_size+_index_size);//1111 1111 00 00
-	umax = umax << __valid_bit_offset;      //1111 0000 00 00
-	mask = mask ^ umax;					    //0000 1111 00 00
+	mask = mask << (_offset_size+_index_size);  //1111 1111 00 00
 	tag = tag & mask;
-	tag >> (_index_size + _offset_size);
+	tag = tag >> (_index_size + _offset_size);
     return tag.to_ulong();
 }
 uint32_t N_Way_Set_cache::get_index(std::string physical_address){
@@ -286,12 +282,10 @@ uint32_t N_Way_Set_cache::get_index(std::string physical_address){
     mask=mask.flip();			//1111 1111
     umax=umax.flip();			//1111 1111
     mask=mask << _offset_size;      	//1111 1100  xor 11 00 00 = 00 11 00
-    umax=umax << _index_size;
+    umax=umax << (_index_size+_offset_size);
     mask = mask ^ umax ; 
-    	//cout<< " Direct_mapped_cache:: get_index:mask(0x"<< physical_address <<"): "<< mask.to_string() << endl;
     idx = idx & mask;
     idx = idx >> _offset_size;
-    
 
 	//cout<< " Direct_mapped_cache:: get_index(0x"<< physical_address << "): "<< idx.to_string() << endl;
     return idx.to_ulong();
@@ -394,6 +388,9 @@ void N_Way_Set_cache::store_tag(std::string physical_address){
     uint32_t tag = get_tag(physical_address);
     uint32_t idx = get_index(physical_address);
     uint32_t way = 0;
+    cout<<"N_Way_Set_cache::store_tag:tag:"<<tag<<endl;
+    cout<<"N_Way_Set_cache::store_tag:idx:"<<idx<<endl;
+
 
     /* 
     Is this function necessary?
