@@ -49,13 +49,14 @@ public :
     }
     void set_write_policy(int wp);
     void placement_policy(char operation_type, string physical_address);
-    int replacement_policy();
+    int replacement_policy(uint32_t cache_index);
     int cache_lookup_algorithm(std::string physical_address);
 
     uint32_t get_way(std::string physical_address);
     uint32_t get_tag(std::string physical_address);
     uint32_t get_index(std::string physical_address);
     void store_tag(std::string physical_address);
+    void _store_tag(uint32_t way, uint32_t cache_index, uint32_t ptag);
 
     uint32_t cache_lookup(std::string physical_address);
     uint32_t _cache_lookup(uint32_t way, uint32_t cache_index);

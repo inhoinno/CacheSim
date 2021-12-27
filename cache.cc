@@ -20,8 +20,8 @@ void ICache::eviction_algorithm(char operation_type, std::string physical_addres
     
 }
 
-uint32_t ICache::get_tag(std::string physical_adderss){
-    cout<<"ICache::get_tag called"<< physical_adderss <<endl;
+uint32_t ICache::get_tag(std::string physical_address){
+    cout<<"ICache::get_tag called"<< physical_address <<endl;
     return 0;
 }
 uint32_t ICache::get_index(std::string physical_address){
@@ -88,7 +88,7 @@ void Direct_mapped_cache::placement_policy(char operation_type, std::string phys
             
             logger->cold_miss();
             store_tag(physical_address);
-            semearrt_valid_bit(get_index(physical_address));
+            set_valid_bit(get_index(physical_address));
 
             if (!write_flag) {  
                 //if ld instruction coldmiss then goto mem and fetch data
@@ -191,9 +191,13 @@ void Direct_mapped_cache::set_dirty_bit(uint32_t cache_index){
 
 void N_Way_Set_cache::placement_policy(char operation_type, std::string physical_address){
     bool write_flag=false;   
-    uint32_t i = 0;  
+    //uint32_t i = 0;  
     uint32_t way = 0;
+    uint32_t idx = get_index(physical_address);
+    uint32_t tag = get_tag(physical_address);
+
     cout<< "N_way_set_cache::placement_policy : operation:"<< operation_type<<" address:" << physical_address <<endl;
+
     if(operation_type == 'l'){
         logger->load();
     }else if(operation_type == 's'){
@@ -243,9 +247,9 @@ void N_Way_Set_cache::placement_policy(char operation_type, std::string physical
             //so we need replacement policy
             logger->conflict_miss(); 
             cout << "N_Way_Set_cache::store_tag call eviction algorithm" << endl;
-            way = eviction_algorithm();
+            way = replacement_policy(idx);
             logger->miss_penalty(MISS_PENALTY_CPU_CYCLE*_offset_size);
-            _store_tag(way,idx);
+            _store_tag(way,idx,tag);
             //now eviction done with write allocation & policy
             //load data to mem
             //now data loaded to cache
@@ -349,7 +353,7 @@ uint32_t N_Way_Set_cache::get_way(std::string physical_address){
 
 bool N_Way_Set_cache::is_valid(std::string physical_address){
     uint32_t idx = get_index(physical_address);
-    uint32_t i =0
+    uint32_t i =0;
     for (i= 0; i<_blocks; i++){
         if(!_is_valid(i, idx))   //true if any entry is invalid
             break;
@@ -358,7 +362,7 @@ bool N_Way_Set_cache::is_valid(std::string physical_address){
     return (i!=_blocks)? false : true;  //i:-1
 }
 bool N_Way_Set_cache::is_dirty(std::string physical_address){
-        return _is_dirty(get_way(physical_address), get_index(physical_address));
+    return _is_dirty(get_way(physical_address), get_index(physical_address));
 }
 void N_Way_Set_cache::set_valid_bit(std::string physical_address){
     _set_valid_bit(get_way(physical_address), get_index(physical_address));
@@ -373,7 +377,7 @@ bool N_Way_Set_cache::_is_valid(uint32_t way, uint32_t cache_index){
     //mask = mask << __valid_bit_offset; //1 00 00
     //mask = mask & val; // 1 00 00 
     //return (mask.to_ulong() == 0) ? false : true ;
-    return (val[_valid_bit_offset] == 1)? true: false;
+    return (val[__valid_bit_offset] == 1)? true: false;
 }
 bool N_Way_Set_cache::_is_dirty(uint32_t way, uint32_t cache_index){
     bitset<32> mask(1);
@@ -392,7 +396,7 @@ void N_Way_Set_cache::_set_dirty_bit(uint32_t way, uint32_t cache_index){
 void N_Way_Set_cache::store_tag(std::string physical_address){
     cout<<"N_Way_Set_cache::store_tag:"<<physical_address<<endl;
     uint32_t tag = get_tag(physical_address);
-    uint32_t idx = get_index(physical_adderss);
+    uint32_t idx = get_index(physical_address);
     uint32_t way = 0;
 
     /* 
@@ -403,17 +407,17 @@ void N_Way_Set_cache::store_tag(std::string physical_address){
             break;
 
     if(way != _blocks)
-        _store_tag(way,idx);
+        _store_tag(way,idx,tag);
     else if(way == _blocks){
         cout << "N_Way_Set_cache::store_tag call eviction algorithm" << endl;
-        way = eviction_algorithm();
-        _store_tag(way,idx);
+        way = replacement_policy(idx);
+        _store_tag(way,idx,tag);
     }
     return;
     }
-void N_Way_Set_cache::_store_tag(uint32_t way, uint32_t cache_index){
-    cout<<"N_Way_Set_cache::store_tag:"<<physical_address<<endl;
-    uint32_t tag = get_tag(physical_address);
+void N_Way_Set_cache::_store_tag(uint32_t way, uint32_t cache_index, uint32_t ptag){
+    cout<<"N_Way_Set_cache::store_tag:"<<ptag<<endl;
+    uint32_t tag = ptag;
     uint32_t idx = cache_index;
     /* 
     If store tag only call by Cache miss, 
@@ -427,10 +431,10 @@ void N_Way_Set_cache::_store_tag(uint32_t way, uint32_t cache_index){
 int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
     uint32_t i =0 ;
     uint32_t ptag = get_tag(physical_address);
-    uint32_t pidx = get_index(physical_adderss);
+    uint32_t pidx = get_index(physical_address);
 
     cout<<"N_Way::cache_lookup_algorithm"<<physical_address<<endl;
-	for(int i=0; i<_blocks; i++){
+	for(i=0; i<_blocks; i++){
         if(ptag == _cache_lookup(i,pidx) && _is_valid(i,pidx)){
                 //then HIT
             return 1;
@@ -439,14 +443,18 @@ int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
     return 0;
 }
 int N_Way_Set_cache::replacement_policy(uint32_t cache_index){
-    cout<< "N_Way_Set_cache::replacement_policy : " <<endl;
-#ifdef __REPLACEMENT_POLICY_RANDOM
+    //cout<< "N_Way_Set_cache::replacement_policy : " <<endl;
+//#ifdef __REPLACEMENT_POLICY_RANDOM
     uint32_t rdx = rand() % _blocks;    //make random number
-                                        //evict tagarray[rdx][cache_index]        
-#endif
-#ifdef __REPLACEMENT_POLICY_LRU
-
-#endif
-    
-    return;
+    tagarray[rdx][cache_index]->reset(); //evict tagarray[rdx][cache_index]        
+    return rdx;
+//#endif
+//#ifdef __REPLACEMENT_POLICY_LRU
+    /*
+    in Set Associative Cache, we need some bit field to recognize which block is lru
+    More precisely, 
+    1bit is needed to recognize which block set (2~4)
+    1bit is needed to recognize which block
+    */
+//#endif
 }
