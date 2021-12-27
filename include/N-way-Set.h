@@ -49,7 +49,7 @@ public :
     }
     void set_write_policy(int wp);
     void placement_policy(char operation_type, string physical_address);
-    void replacement_policy();
+    int replacement_policy();
     int cache_lookup_algorithm(std::string physical_address);
 
     uint32_t get_way(std::string physical_address);
