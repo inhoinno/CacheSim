@@ -34,7 +34,7 @@ public :
         _offset_size = (uint32_t)log2(bytes_per_block);
         _index_size = (uint32_t)log2(sets);
         _tag_size = (uint32_t)(mem_address_size) - _index_size - _offset_size;
-        __valid_bit_offset = _tag_size + _index_size + _offset_size;
+        __valid_bit_offset = _tag_size + 1;
 
         cout <<"  N-way-Associative_cache:: offset  :" << _offset_size << " bits"<<endl; 
         cout <<"  N-way-Associative_cache:: index   :" << _index_size << " bits"<<endl; 
