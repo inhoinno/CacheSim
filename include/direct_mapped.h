@@ -40,7 +40,8 @@ public :
 
         tagarray.assign(pow(2,_index_size), new bitset<32>(0));
         cout <<"  Direct_mapped_cache:: tagarray:"<< tagarray.size()<<" entries"<<endl;
-        __valid_bit_offset = _tag_size + _index_size + _offset_size;
+        __valid_bit_offset = _tag_size + _valid_bit_size;
+        __dirty_bit_offset = __valid_bit_offset + _dirty_bit_size;
 
 
     }
