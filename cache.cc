@@ -270,17 +270,13 @@ uint32_t N_Way_Set_cache::get_tag(std::string physical_address){
     bitset<32> umax(0); //pm
     bitset<32> tag(mask & hex_to_bitset(physical_address));
 
-
 	mask = mask.flip();
 	umax = umax.flip();
-	mask = mask << _index_size;				//1111 0000
-	umax = umax >> (_valid_bit_size+_dirty_bit_size); 	//0111 1111
-	mask = mask ^ umax;					//1000 1111
-	mask = mask.flip();					//0111 0000
+	mask = mask << (_offset_size+_index_size);//1111 1111 00 00
+	umax = umax << __valid_bit_offset;      //1111 0000 00 00
+	mask = mask ^ umax;					    //0000 1111 00 00
 	tag = tag & mask;
 	tag >> (_index_size + _offset_size);
-	
-
     return tag.to_ulong();
 }
 uint32_t N_Way_Set_cache::get_index(std::string physical_address){
