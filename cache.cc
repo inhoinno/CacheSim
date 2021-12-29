@@ -391,7 +391,6 @@ void N_Way_Set_cache::store_tag(std::string physical_address){
     cout<<"N_Way_Set_cache::store_tag:tag:"<<tag<<endl;
     cout<<"N_Way_Set_cache::store_tag:idx:"<<idx<<endl;
 
-
     /* 
     Is this function necessary?
     */
@@ -437,17 +436,21 @@ int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
 }
 int N_Way_Set_cache::replacement_policy(uint32_t cache_index){
     //cout<< "N_Way_Set_cache::replacement_policy : " <<endl;
-//#ifdef __REPLACEMENT_POLICY_RANDOM
+    uint32_t idx = cache_index;
+#ifdef __REPLACEMENT_POLICY_RANDOM
     uint32_t rdx = rand() % _blocks;    //make random number
-    tagarray[rdx][cache_index]->reset(); //evict tagarray[rdx][cache_index]        
+    tagarray[rdx][idx]->reset(); //evict tagarray[rdx][cache_index]        
     return rdx;
-//#endif
-//#ifdef __REPLACEMENT_POLICY_LRU
+#endif
+#ifdef __REPLACEMENT_POLICY_LRU
     /*
     in Set Associative Cache, we need some bit field to recognize which block is lru
-    More precisely, 
-    1bit is needed to recognize which block set (2~4)
-    1bit is needed to recognize which block
+    More precisely, we take Tree-PLRU because cache plru evicts victims in hardware level
+    So, when desing a cache simulator, simple LinkedList scheme in Virtual Memory may not a proper approach 
     */
-//#endif
+    uint32_t eway = replacement_lru_treeplru(idx);
+    tagarray[eway][idx]->reset();
+    return eway;
+
+#endif
 }

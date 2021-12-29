@@ -3,15 +3,17 @@
 #include "./cache.h"
 class N_Way_Set_cache : public ICache{
 private: 
-   std::vector<std::bitset<32>*> * tagarray; //e.g. [index(3) valid(1) tag(8)] then 
+    std::vector<std::bitset<32>*> * tagarray; //e.g. [index(3) valid(1) tag(8)] then 
                                           // (tagarray[index] & 1<<__valid_bit_offset) check valid bit
                                           // (tagarray[index] & 1*tagsize << __tag_bit_offset) is tag
+    std::vector<std::bitset<32>*> * access_array; //access_array[index] = bitset
     uint32_t __index_bit_offset;
     uint32_t __tag_bit_offset;
     uint32_t __valid_bit_offset;    //these field is use for check valid bit like real world cache.
     uint32_t __dirty_bit_offset;    //e.g [1 deadbeef 1] then check valid bit like (tagarray[index] & 1<<__valid_bit_offset)==1 
                                     //     ^valid     ^dirty
     //bit size
+    uint32_t _access_bit_size;
     uint32_t _offset_size;
     uint32_t _blocks;
     uint32_t _tag_size;
@@ -34,6 +36,8 @@ public :
         _offset_size = (uint32_t)log2(bytes_per_block);
         _index_size = (uint32_t)log2(sets);
         _tag_size = (uint32_t)(mem_address_size) - _index_size - _offset_size;
+        _access_bit_size = log2(_blocks); //2:1 4:2 8:3
+
         __valid_bit_offset = _tag_size + _valid_bit_size;
         __dirty_bit_offset = __valid_bit_offset + _dirty_bit_size;
 
@@ -41,7 +45,8 @@ public :
         cout <<"  N-way-Associative_cache:: index   :" << _index_size << " bits"<<endl; 
         cout <<"  N-way-Associative_cache:: tag     :" << _tag_size << " bits"<<endl; 
         tagarray = new std::vector<std::bitset<32>*>[blocks];
-
+        access_array = new std::vector<std::bitset<32>*>;
+        access_array->assign(pow(2,_index_size), new bitset<32>(0));
         for(int i=0; i<blocks; i++){
             tagarray[i].assign(pow(2,_index_size), new bitset<32>(0));
             cout <<"  N-way-Associative_cache:: tagarray["<< i<<"]:"<< tagarray[i].size()<<" entries"<<endl;

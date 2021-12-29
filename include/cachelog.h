@@ -72,8 +72,8 @@ namespace cachelog{
             std::cout<< "Store misses   : "<< store_miss_count   <<std::endl;
             std::cout<< "Total cycles   : "<< total_cycle       <<" cycles" <<std::endl;
             std::cout<< "Miss penalty   : "<< total_miss_penalty<<" cycles" <<std::endl;
-            std::cout<< "Hit Ratio      : "<< 100*total_hit_count/(total_hit_count+total_miss_count)    <<"%"<<std::endl;
-            std::cout<< "Miss Ratio     : "<< 100*total_miss_count/(total_hit_count+total_miss_count)   <<"%"<<std::endl;
+            std::cout<< "Hit Ratio      : "<< (double)100*total_hit_count/(total_hit_count+total_miss_count)    <<"%"<<std::endl;
+            std::cout<< "Miss Ratio     : "<< (double)100*total_miss_count/(total_hit_count+total_miss_count)   <<"%"<<std::endl;
             std::cout<< " cold miss         : "<< cold_miss_count       << " "<< 100*cold_miss_count/total_miss_count<<" (%)" <<std::endl;
             std::cout<< " capacity miss     : "<< capacity_miss_count   << " "<< 100*capacity_miss_count/total_miss_count<<" (%)" <<std::endl;
             std::cout<< " conflict miss     : "<< conflict_miss_count   << " "<< 100*conflict_miss_count/total_miss_count<<" (%)" <<std::endl;
