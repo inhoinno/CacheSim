@@ -1,5 +1,5 @@
 CC = g++
-OBJS = main.o cache.o interpreter.o 
+OBJS = main.o cache.o interpreter.o n-way-set.o
 DEPS= $(OBJS:.o=.d)
 TARGET = hw4
 INCLUDE = -Iinclude/

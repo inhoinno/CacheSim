@@ -41,12 +41,12 @@ class Args_interpreter {
     int _sets;
     int _blocks;
     int _bytes_in_block;
-    string _which_cache;
+    std::string _which_cache;
     int _cache_type; //0:Direct-Mapped 1:N-way-Set 2: Fully-associate
-    string _write_allocation;
-    string _write_policy;
+    std::string _write_allocation;
+    std::string _write_policy;
     int _evict_type;
-    string _evict_policy;
+    std::string _evict_policy;
 
     public:
     Args_interpreter();
@@ -88,14 +88,17 @@ class Args_interpreter {
         }
         
         /*
-        if (write_allocation){
+        if (_write_allocation == "write-allocate"){
             //then 
+            _write_allocation.assign("write-allocate");            
+        }else{
+            _write_allocation.assign("write-back");
         }
         if (write_poilcy){
 
         }
-        if(eviction_policy){
-            evict_type = eviction_policy ;
+        if(eviction_pol == 0){
+            evict_type = lru ;
             evict()
         }*/
         int i=0;

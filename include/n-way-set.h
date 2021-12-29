@@ -1,6 +1,11 @@
-#pragma once
 
+#include <vector>
+#include <bitset>
+#include <cmath>
+#include <iostream>
+#include <string>
 #include "./cache.h"
+using namespace std;
 class N_Way_Set_cache : public ICache{
 private: 
     std::vector<std::bitset<32>*> * tagarray; //e.g. [index(3) valid(1) tag(8)] then 
@@ -20,6 +25,8 @@ private:
     uint32_t _index_size;
     uint32_t _valid_bit_size =1;
     uint32_t _dirty_bit_size =1;
+
+    uint32_t _replacement_policy;
 
 public :
     N_Way_Set_cache();
@@ -55,7 +62,7 @@ public :
     }
     void set_write_policy(int wp);
     void placement_policy(char operation_type, string physical_address);
-    int replacement_policy(uint32_t cache_index);
+    uint32_t replacement_policy(uint32_t cache_index);
     int cache_lookup_algorithm(std::string physical_address);
 
     uint32_t get_way(std::string physical_address);
@@ -78,4 +85,7 @@ public :
     
     void set_dirty_bit(std::string physical_address);
     void _set_dirty_bit(uint32_t way, uint32_t cache_index);
+    void set_replacement_policy(int type);
+
+    uint32_t replacement_lru_treeplru(uint32_t cache_index);
 };

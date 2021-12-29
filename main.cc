@@ -2,7 +2,7 @@
 #include "./include/interpreter.h"
 #include "./include/cache.h"
 #include "./include/direct_mapped.h"
-#include "./include/N-way-Set.h"
+#include "./include/n-way-set.h"
 //#include "./include/fully_associate.h"
 #include <iostream>
 #include <bitset>
