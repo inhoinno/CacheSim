@@ -72,10 +72,6 @@ uint32_t N_Way_Set_cache::replacement_lru_treeplru(uint32_t cache_index){
     uint32_t level = _access_bit_size;
     bitset<32> whichway(0);
     bitset<32> * tmp=access_array[0][cache_index];
-
-    
-    access_array[0][cache_index]->flip();
-    cout << "   replacement_lru_treeplru:intentional flip" << endl;
     
     /*
     guess this is 4-way then 3bits is setted
@@ -346,6 +342,16 @@ int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
 	for(i=0; i<_blocks; i++){
         if(ptag == _cache_lookup(i,pidx) && _is_valid(i,pidx)){
                 //then HIT
+            //i 에서 Hit
+            //1 3 6 10
+            //bit:[2][1][0]                     //bit [6][5][4][3][2][1][0]
+            //       [2]                        //              [6]
+            //   [1]    [0]                     //         [5]       [4]
+            // (0) (1) (2) (3)                  //      [3]   [2]  [1]  [0]
+            //  ^i [2]=1[1]=1                   //    (0)(1)(2)(3)(4)(5)(6)(7)
+            //      ^i [2]=1[1]=0               //
+            //          ^i [2]=0[0]=1           //
+            //              ^i [2]=0[0]=0       //
             return 1;
         }
     }
