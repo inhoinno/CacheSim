@@ -86,6 +86,7 @@ public :
     void set_dirty_bit(std::string physical_address);
     void _set_dirty_bit(uint32_t way, uint32_t cache_index);
     void set_replacement_policy(int type);
+    void access_bit_setting_algorithm_impl(uint32_t block, uint32_t idx);
 
     uint32_t replacement_lru_treeplru(uint32_t cache_index);
 };
