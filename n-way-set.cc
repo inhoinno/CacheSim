@@ -368,14 +368,14 @@ int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
                                                 //access_bit = access_bit & carebit      // set access info by carebit
             hit = true//return 1;
             /* accessbit setting algorithm*/
-            access_bit_setting_algorithm(i,pidx);
+            access_bit_setting_algorithm_impl(i,pidx);
             break;
 
         }
     }
     return (hit)? 1:0;
 }
-void N_Way_Set_cache::access_bit_setting_algorithm(uint32_t block, uint32_t pidx){
+void N_Way_Set_cache::access_bit_setting_algorithm_impl(uint32_t block, uint32_t pidx){
     uint32_t level = log2(this._blocks);
     uint32_t curr_level,base,iidx,index = 0;
     bitset<32> carebitmask = bitset<32>(-1);
