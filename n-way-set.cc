@@ -334,6 +334,7 @@ void N_Way_Set_cache::_store_tag(uint32_t way, uint32_t cache_index, uint32_t pt
     }
 
 int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
+    bool hit = false;
     uint32_t i =0 ;
     uint32_t ptag = get_tag(physical_address);
     uint32_t pidx = get_index(physical_address);
@@ -344,18 +345,54 @@ int N_Way_Set_cache::cache_lookup_algorithm(std::string physical_address){
                 //then HIT
             //i 에서 Hit
             //1 3 6 10
-            //bit:[2][1][0]                     //bit [6][5][4][3][2][1][0]
+            //bit:[2] [1][0]                    //bit [6] [5][4] [3][2][1][0]
             //       [2]                        //              [6]
             //   [1]    [0]                     //         [5]       [4]
             // (0) (1) (2) (3)                  //      [3]   [2]  [1]  [0]
             //  ^i [2]=1[1]=1                   //    (0)(1)(2)(3)(4)(5)(6)(7)
-            //      ^i [2]=1[1]=0               //
-            //          ^i [2]=0[0]=1           //
-            //              ^i [2]=0[0]=0       //
-            return 1;
+            //      ^i [2]=1[1]=0               // if i=0 111(_blocks-1-i) (1 1X 1XXX) i=7(_blocks-1-i) 000(0 X0 XXX0)
+            //          ^i [2]=0[0]=1           //    i=3 100(_blocks-1-i) (1 0X X0XX) i=4(_blocks-1-i) 011(0 X1 XX1X)
+            //              ^i [2]=0[0]=0       // 0<=i<=N-1  
+            // if i=0(11X) i=3(0X0)             // block = N 
+            // if i=1(10X) i=2(1X0)             // level = log2(block)  
+                                                // setting bit = int_to_bin(block-1-i)
+                                                // base,iidx,index= 0; carebitmask = bitset<>(-1)
+                                                //for(curr_level=0; curr_level<level; curr_level++)   //1.for문이용 2.선 정의된 bitmask를 이용
+                                                //  carebitmask.flip(index) //to 0
+                                                //  carebit[index] = bit[curr_level]
+                                                //  base = 2^curr_level -1 (0,1,3,7)
+                                                //  iidx = 2*iidx + bit[curr_level]
+                                                //  index = base + iidx
+                                                //
+                                                //access_bit = access_bit & carebitmask; // sanitize by carebitmask
+                                                //access_bit = access_bit & carebit      // set access info by carebit
+            hit = true//return 1;
+            /* accessbit setting algorithm*/
+            access_bit_setting_algorithm(i,pidx);
+            break;
+
         }
     }
-    return 0;
+    return (hit)? 1:0;
+}
+void N_Way_Set_cache::access_bit_setting_algorithm(uint32_t block, uint32_t pidx){
+    uint32_t level = log2(this._blocks);
+    uint32_t curr_level,base,iidx,index = 0;
+    bitset<32> carebitmask = bitset<32>(-1);
+    bitset<32> carebitval  = bitset<32>(0);
+    bitset<32> setting_bit = int_to_bin(this._blocks - 1 -i);
+    //setting_bit = setting_bit.reverse()
+    bitset<> () 
+
+    for(curr_level = 0; curr_level<level; curr_level++){
+        carebitmask.flip(index) //1 to 0
+        carebitval[index] = setting_bit[level - curr_level -1]; //set carebit
+        base = 2^curr_level -1 ;
+        iidx = 2*iidx + setting_bit[level - curr_level -1];
+        index = base+iidx;
+    }
+    access_bit_array[pidx] = (access_bit_array[pidx] & carebitmask) & carebitval;
+    return;
 }
 
 void N_Way_Set_cache::set_replacement_policy(int type){
